@@ -430,6 +430,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Hexagons: []
   Plitkas: []
+  Walls: []
+  canAddPlitka: 1
 --- !u!65 &1177939219873615628
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -449,7 +451,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.01, y: 0.35, z: 0.01}
+  m_Size: {x: 0.001, y: 0.35, z: 0.001}
   m_Center: {x: 0, y: 0.17, z: 0}
 --- !u!4 &8649817080463962616 stripped
 Transform:

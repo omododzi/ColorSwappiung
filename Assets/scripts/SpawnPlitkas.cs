@@ -24,7 +24,7 @@ public class SpawnPlitkas : MonoBehaviour
         foreach (GameObject spawnPoint in spawnPoints)
         {
             // Определяем случайное количество плиток для этой точки
-            int tilesCount = Random.Range(1, maxStackHeight + 1);
+            int tilesCount = Random.Range(2, maxStackHeight + 1);
             Vector3 currentPosition = spawnPoint.transform.position;
             
             // Создаем первую (нижнюю) плитку
