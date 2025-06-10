@@ -328,11 +328,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 75d34a3bff5690645a6fc69f762abdd0, type: 3}
       propertyPath: m_LocalScale.y
-      value: 22.325552
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 75d34a3bff5690645a6fc69f762abdd0, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.7214501
+      value: 3.20545
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 75d34a3bff5690645a6fc69f762abdd0, type: 3}
       propertyPath: m_LocalPosition.y
@@ -340,7 +340,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 75d34a3bff5690645a6fc69f762abdd0, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -1.51967
+      value: 1.0683298
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 75d34a3bff5690645a6fc69f762abdd0, type: 3}
       propertyPath: m_LocalRotation.w
@@ -407,6 +407,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 75d34a3bff5690645a6fc69f762abdd0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7342556309327120754}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 75d34a3bff5690645a6fc69f762abdd0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1177939219873615628}
   m_SourcePrefab: {fileID: 100100000, guid: 75d34a3bff5690645a6fc69f762abdd0, type: 3}
 --- !u!1 &8305062548749249346 stripped
 GameObject:
@@ -425,15 +428,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b6ddb03f4b481e468e81e013222263b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  UpTirn: {fileID: 6182180576155654660}
-  UpLeftTirn: {fileID: 6535923084074195749}
-  UpRightTirn: {fileID: 739956921520002425}
-  DownTirn: {fileID: 2973766436980593074}
-  DownLeftTirn: {fileID: 1063092110894505151}
-  DownRightTirn: {fileID: 8014945559957266659}
   Hexagons: []
-  Plitkas:
-  - {fileID: 0}
+  Plitkas: []
+--- !u!65 &1177939219873615628
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8305062548749249346}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.01, y: 0.35, z: 0.01}
+  m_Center: {x: 0, y: 0.17, z: 0}
 --- !u!4 &8649817080463962616 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 75d34a3bff5690645a6fc69f762abdd0, type: 3}

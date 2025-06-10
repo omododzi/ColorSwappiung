@@ -1,36 +1,78 @@
 using UnityEngine;
-
+using System.Collections.Generic;
 public class DragObject : MonoBehaviour
 {
-    private bool isDragging = false;
+    public bool isDragging = false;
+    public bool canDrag = true;
+    public bool OffDrag = false;
     private Vector3 offset;
     private float zCoord;
-    [SerializeField] private float smoothSpeed = 20f;
+    private float baseSmoothSpeed = 10f;
+    private float distanceSpeedMultiplier = 5f;
+    
+    [HideInInspector]
+    public Triangle currentHex; // Текущий гекс, на котором находится плитка
 
     private void OnMouseDown()
     {
-        zCoord = Camera.main.WorldToScreenPoint(transform.position).z;
-        offset = transform.position - GetMouseWorldPos();
-        isDragging = true;
+        if(!OffDrag)
+        {
+            if (transform.parent != null || !canDrag)
+                return;
+
+            zCoord = Camera.main.WorldToScreenPoint(transform.position).z;
+            offset = transform.position - GetMouseWorldPos();
+            isDragging = true;
+
+            // Захватываем всю стопку плиток
+            if (currentHex != null)
+            {
+                int index = currentHex.Plitkas.IndexOf(gameObject);
+                if (index != -1)
+                {
+                    // Создаем временный список плиток для перемещения
+                    List<GameObject> tilesToDrag = new List<GameObject>();
+                    for (int i = index; i < currentHex.Plitkas.Count; i++)
+                    {
+                        tilesToDrag.Add(currentHex.Plitkas[i]);
+                    }
+
+                    // Устанавливаем родителя для плиток стопки
+                    foreach (var tile in tilesToDrag)
+                    {
+                        tile.transform.SetParent(transform);
+                    }
+                }
+            }
+        }
     }
 
     private void OnMouseUp()
     {
+        if (!isDragging&& !OffDrag) 
+            return;
+        
         isDragging = false;
+        
+        // Сбрасываем родителя для всех дочерних плиток
+       
     }
 
     private void Update()
     {
-        if (isDragging)
+        if (isDragging && transform.parent == null&& !OffDrag)
         {
             Vector3 targetPosition = GetMouseWorldPos() + offset;
-            // Сохраняем текущую координату Y
-            targetPosition.y = transform.position.y;
-            // Применяем сглаживание только к осям X и Z
-            Vector3 newPosition = transform.position;
-            newPosition.x = Mathf.Lerp(newPosition.x, targetPosition.x, smoothSpeed * Time.deltaTime);
-            newPosition.z = Mathf.Lerp(newPosition.z, targetPosition.z, smoothSpeed * Time.deltaTime);
-            transform.position = newPosition;
+            targetPosition.y = 2f;
+
+            float distanceToCamera = Vector3.Distance(Camera.main.transform.position, transform.position);
+            float dynamicSpeed = baseSmoothSpeed * (1f + distanceToCamera * distanceSpeedMultiplier);
+
+            transform.position = Vector3.Lerp(
+                transform.position,
+                targetPosition,
+                dynamicSpeed * Time.deltaTime
+            );
         }
     }
 
@@ -38,9 +80,25 @@ public class DragObject : MonoBehaviour
     {
         Vector3 mousePoint = Input.mousePosition;
         mousePoint.z = zCoord;
-        Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(mousePoint);
-        // Возвращаем позицию мыши в мировых координатах, но сохраняем текущую координату Y
-        mouseWorldPos.y = transform.position.y;
-        return mouseWorldPos;
+        return Camera.main.ScreenToWorldPoint(mousePoint);
+    }
+
+    // Обработка триггеров для отслеживания текущего гекса
+    private void OnTriggerEnter(Collider other)
+    {
+        Triangle hex = other.GetComponent<Triangle>();
+        if (hex != null)
+        {
+            currentHex = hex;
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        Triangle hex = other.GetComponent<Triangle>();
+        if (hex == currentHex)
+        {
+            currentHex = null;
+        }
     }
 }

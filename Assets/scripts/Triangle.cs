@@ -4,19 +4,70 @@ using System.Collections.Generic;
 
 public class Triangle : MonoBehaviour
 {
-    public GameObject UpTirn;
-    public GameObject UpLeftTirn;
-    public GameObject UpRightTirn;
-    public GameObject DownTirn;
-    public GameObject DownLeftTirn;
-    public GameObject DownRightTirn;
-    
     public List<Triangle> Hexagons = new List<Triangle>();
     public List<GameObject> Plitkas = new List<GameObject>();
+    public List<GameObject> Walls = new List<GameObject>();
 
     private void Start()
     {
         FindNeighbors();
+    }
+
+    private void Update()
+    {
+        if (Plitkas.Count > 0)
+        {
+            UpdateTilePositions();
+        }
+    }
+    void UpdateTilePositions()
+    {
+        for (int i = 0; i < Plitkas.Count; i++)
+        {
+            // Пропускаем плитки, которые перемещаются или имеют родителя
+            if (Plitkas[i] == null || Plitkas[i].transform.parent != null)
+                continue;
+
+            var dragComp = Plitkas[i].GetComponent<DragObject>();
+            if (dragComp != null && (dragComp.isDragging || !dragComp.canDrag))
+                continue;
+
+            // Устанавливаем позицию плитки
+            Vector3 basePosition = (i == 0) ? transform.position : Plitkas[i-1].transform.position;
+            Plitkas[i].transform.position = basePosition + Vector3.up * 0.2f *Walls.Count;
+        }
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Plitka"))
+        {
+            Walls.Add(other.gameObject);
+            if (other.gameObject.transform.parent == null)
+            {
+                DragObject dragObject = other.gameObject.GetComponent<DragObject>();
+                if (!dragObject.OffDrag)
+                {
+                    Plitkas.Add(other.gameObject);
+                }
+            }
+        }
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Plitka")) 
+        {
+            if (Plitkas.Contains(other.gameObject))
+            {
+                Plitkas.Remove(other.gameObject);
+            }
+
+            if (Walls.Contains(other.gameObject))
+            {
+                Walls.Remove(other.gameObject);
+            }
+        }
     }
    
     private void FindNeighbors()
@@ -42,7 +93,8 @@ public class Triangle : MonoBehaviour
             }
         }
     }
-
+    
+    
     public void CheckNeighborTopColor()
     {
         if (Hexagons.Count == 0 || Plitkas.Count == 0)

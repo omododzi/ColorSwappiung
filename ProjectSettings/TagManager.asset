@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Hexagon
   - SpawnTarg
+  - Plitka
   layers:
   - Default
   - TransparentFX

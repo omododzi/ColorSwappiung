@@ -1861,13 +1861,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28fdd4ff2e994c84f8f0ed3c9e61b0d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  plitki:
+  plitkiPrefabs:
   - {fileID: 7809108789615296302, guid: 5a23a872710bbc4478807ed6335e73c0, type: 3}
   - {fileID: 436953787812014690, guid: 0f0a02752ab1438439eddfa4dd716e3f, type: 3}
   - {fileID: 7969148826267053969, guid: 099b575a53e4c604d83ce4cd367ead0e, type: 3}
   - {fileID: 5252969438551365088, guid: 110666128e214ac4684180872baaea9a, type: 3}
   - {fileID: 8326400234426037561, guid: 02b195d52ac84a24bb15c711b565377c, type: 3}
   - {fileID: 2936805698666154939, guid: c9b2ad52b16d5244fa298b0b7ec2a433, type: 3}
+  maxStackHeight: 5
+  verticalOffset: 0.2
 --- !u!4 &1965870219
 Transform:
   m_ObjectHideFlags: 0
@@ -2210,17 +2212,9 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1156567271}
     m_Modifications:
-    - target: {fileID: 7342556309327120754, guid: 70c3f8e53faae0842bea943c0eb944d4, type: 3}
-      propertyPath: 'Plitkas.Array.data[0]'
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 8305062548749249346, guid: 70c3f8e53faae0842bea943c0eb944d4, type: 3}
       propertyPath: m_Name
       value: "\u0448\u0443\u0433\u043E\u043B (18)"
-      objectReference: {fileID: 0}
-    - target: {fileID: 8649817080463962616, guid: 70c3f8e53faae0842bea943c0eb944d4, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 8649817080463962616, guid: 70c3f8e53faae0842bea943c0eb944d4, type: 3}
       propertyPath: m_LocalPosition.x

@@ -3,30 +3,65 @@ using UnityEngine;
 
 public class SpawnPlitkas : MonoBehaviour
 {
-   
-    public List<GameObject> plitki = new List<GameObject>();
-    private GameObject[] positions;
+    [Header("Настройки генерации")]
+    [Tooltip("Префабы плиток для генерации")]
+    public List<GameObject> plitkiPrefabs = new List<GameObject>();
+    [Tooltip("Максимальное количество плиток в стопке")]
+    public int maxStackHeight = 5;
+    [Tooltip("Расстояние между плитками по вертикали")]
+    public float verticalOffset = 0.2f;
 
     void Start()
     {
-        positions = GameObject.FindGameObjectsWithTag("SpawnTarg");
+        SpawnTiles();
+    }
+
+    void SpawnTiles()
+    {
+        // Находим все точки спавна
+        GameObject[] spawnPoints = GameObject.FindGameObjectsWithTag("SpawnTarg");
         
-        for (int i = 0; i < positions.Length; i++)
+        foreach (GameObject spawnPoint in spawnPoints)
         {
-            int a = Random.Range(0, 5);
+            // Определяем случайное количество плиток для этой точки
+            int tilesCount = Random.Range(1, maxStackHeight + 1);
+            Vector3 currentPosition = spawnPoint.transform.position;
             
-            Vector3 newPos = new Vector3(positions[i].transform.position.x,
-                positions[i].transform.position.y+0.2f,
-                positions[i].transform.position.z);
-            int index = Random.Range(0, plitki.Count);
-            Instantiate(plitki[index], newPos, Quaternion.identity);
-            for (int j = 0; j < a; j++)
+            // Создаем первую (нижнюю) плитку
+            GameObject bottomTile = CreateTileAtPosition(currentPosition);
+            GameObject currentParent = bottomTile;
+
+            // Создаем остальные плитки в стопке
+            for (int i = 1; i < tilesCount; i++)
             {
-                index = Random.Range(0, plitki.Count);
-                newPos.y += 0.2f;
-                Instantiate(plitki[index], newPos, Quaternion.identity);
+                currentPosition.y += verticalOffset;
+                GameObject newTile = CreateTileAtPosition(currentPosition);
+                
+                // Делаем предыдущую плитку дочерней к новой
+                currentParent.transform.SetParent(newTile.transform);
+                currentParent = newTile;
             }
-           
         }
+    }
+
+    GameObject CreateTileAtPosition(Vector3 position)
+    {
+        if (plitkiPrefabs.Count == 0)
+        {
+            Debug.LogError("Нет префабов плиток для генерации!");
+            return null;
+        }
+
+        // Выбираем случайный префаб
+        int randomIndex = Random.Range(0, plitkiPrefabs.Count);
+        GameObject tilePrefab = plitkiPrefabs[randomIndex];
+        
+        // Создаем экземпляр плитки
+        GameObject newTile = Instantiate(tilePrefab, position, Quaternion.identity);
+        
+        // Можно добавить здесь дополнительные настройки плитки
+        newTile.name = $"Tile_{randomIndex}_{Time.time}";
+        
+        return newTile;
     }
 }

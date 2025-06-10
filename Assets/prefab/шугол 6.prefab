@@ -60,6 +60,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: "\u0448\u0443\u0433\u043E\u043B 6"
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 75d34a3bff5690645a6fc69f762abdd0, type: 3}
+      propertyPath: m_TagString
+      value: Plitka
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -70,6 +74,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 75d34a3bff5690645a6fc69f762abdd0, type: 3}
       insertIndex: -1
       addedObject: {fileID: -8757997049050117024}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 75d34a3bff5690645a6fc69f762abdd0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 9098515538386184660}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 75d34a3bff5690645a6fc69f762abdd0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8290471058407828889}
   m_SourcePrefab: {fileID: 100100000, guid: 75d34a3bff5690645a6fc69f762abdd0, type: 3}
 --- !u!1 &2936805698666154939 stripped
 GameObject:
@@ -110,4 +120,43 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c8a1fcc77d9b234980df9d21015b419, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  smoothSpeed: 10
+  isDragging: 0
+--- !u!54 &9098515538386184660
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2936805698666154939}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!114 &8290471058407828889
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2936805698666154939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eda904f4f08043045917845404f5d26a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
