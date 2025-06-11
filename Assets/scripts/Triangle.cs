@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using UnityEngine;
 using System.Collections.Generic;
@@ -10,6 +9,10 @@ public class Triangle : MonoBehaviour
     public List<GameObject> Walls = new List<GameObject>();
     public bool canAddPlitka = true;
 
+    private bool isProcessing = false;
+    private bool isUpdatingPositions = false;
+    private bool isTransferInProgress = false; // Флаг для отслеживания переноса
+
     private void Start()
     {
         FindNeighbors();
@@ -17,16 +20,51 @@ public class Triangle : MonoBehaviour
 
     private void Update()
     {
-        if (Plitkas.Count > 0 & canAddPlitka)
+        if (Plitkas.Count > 0 && canAddPlitka)
         {
-            UpdateTilePositions();
+            StartCoroutine(UpdateTilePositionsCoroutine());
         }
     }
+    private void FindNeighbors()
+    {
+        float rayDistance = 1.5f;
+        Vector3[] directions = new Vector3[6]
+        {
+            new Vector3(0, 0, 1),
+            new Vector3(0.866f, 0, 0.5f),
+            new Vector3(0.866f, 0, -0.5f),
+            new Vector3(0, 0, -1),
+            new Vector3(-0.866f, 0, -0.5f),
+            new Vector3(-0.866f, 0, 0.5f)
+        };
+
+        for (int i = 0; i < 6; i++)
+        {
+            Ray ray = new Ray(transform.position, directions[i]);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit, rayDistance))
+            {
+                Triangle triangle = hit.collider.GetComponentInParent<Triangle>();
+                if (triangle != null && !Hexagons.Contains(triangle))
+                {
+                    Hexagons.Add(triangle);
+                }
+            }
+        }
+    }
+
+    IEnumerator UpdateTilePositionsCoroutine()
+    {
+        isUpdatingPositions = true;
+        UpdateTilePositions();
+        yield return new WaitForSeconds(0.1f);
+        isUpdatingPositions = false;
+    }
+
     void UpdateTilePositions()
     {
         for (int i = 0; i < Plitkas.Count; i++)
         {
-            // Пропускаем плитки, которые перемещаются или имеют родителя
             if (Plitkas[i] == null || Plitkas[i].transform.parent != null)
                 continue;
 
@@ -34,40 +72,53 @@ public class Triangle : MonoBehaviour
             if (dragComp != null && (dragComp.isDragging || !dragComp.canDrag))
                 continue;
 
-            // Устанавливаем позицию плитки
             Vector3 basePosition = (i == 0) ? transform.position : Plitkas[i-1].transform.position;
-            Plitkas[i].transform.position = basePosition + Vector3.up * 0.2f *Walls.Count;
-            dragComp.OffDrag = true;
-            canAddPlitka = false;
+            Vector3 targetPosition = basePosition + Vector3.up * 0.2f * Walls.Count;
+            
+            // Проверяем, нужно ли вообще перемещать
+            if (Vector3.Distance(Plitkas[i].transform.position, targetPosition) > 0.01f)
+            {
+                StartCoroutine(SmoothMove(Plitkas[i], targetPosition));
+                dragComp.OffDrag = true;
+                canAddPlitka = false;
+            }
             StartCoroutine(MakeNullParent());
+        }
+        
+    }
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Plitka") && canAddPlitka)
+        {
+            Walls.Add(other.gameObject);
+            if (other.gameObject.transform.parent == null)
+            {
+                DragObject dragObject = other.gameObject.GetComponent<DragObject>();
+                if (dragObject != null && !dragObject.OffDrag)
+                {
+                    
+                    Plitkas.Add(other.gameObject);
+                    
+                }
+            }
+           
         }
     }
 
-    void AddNewWalls(GameObject wall)
+    void OnTriggerExit(Collider other)
     {
-        if (wall == null) return;
+        if (other.CompareTag("Plitka") && canAddPlitka) 
+        {
+            if (Plitkas.Contains(other.gameObject))
+            {
+                Plitkas.Remove(other.gameObject);
+            }
 
-        // Определяем базовую позицию (последняя плитка или стена, или сам треугольник)
-        Vector3 basePosition;
-    
-        if (Plitkas.Count > 0)
-            basePosition = Plitkas[Plitkas.Count - 1].transform.position;
-        else if (Walls.Count > 0)
-            basePosition = Walls[Walls.Count - 1].transform.position;
-        else
-            basePosition = transform.position;
-
-        // Позиционируем новую стену с небольшим смещением вверх
-        wall.transform.position = basePosition + Vector3.up * 0.2f;
-    
-        // Добавляем в список стен
-        Walls.Add(wall);
-    
-        // Разрешаем добавлять новые элементы
-        canAddPlitka = true;
-    
-        // Опционально: плавное перемещение вместо телепортации
-        StartCoroutine(SmoothMove(wall, basePosition + Vector3.up * 0.2f));
+            if (Walls.Contains(other.gameObject))
+            {
+                Walls.Remove(other.gameObject);
+            }
+        }
     }
 
     IEnumerator SmoothMove(GameObject obj, Vector3 targetPosition)
@@ -86,136 +137,131 @@ public class Triangle : MonoBehaviour
         obj.transform.position = targetPosition;
     }
 
+    
+
     IEnumerator MakeNullParent()
     {
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(0.5f);
         foreach (var wal in Walls)
         {
-            if (wal.transform.parent != null)
+            if (wal != null && wal.transform.parent != null)
             {
                 wal.transform.parent = null;
             }
         }
-        CheckNeighborTopColor();
-    }
-
-    void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Plitka")&& canAddPlitka)
+        
+        // Проверяем соседей только если не в процессе переноса
+        if (!isTransferInProgress)
         {
-            Walls.Add(other.gameObject);
-            if (other.gameObject.transform.parent == null)
-            {
-                DragObject dragObject = other.gameObject.GetComponent<DragObject>();
-                if (!dragObject.OffDrag)
-                {
-                    Plitkas.Add(other.gameObject);
-                }
-            }
+            CheckNeighborTopColor();
         }
     }
-
-    void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("Plitka")&& canAddPlitka) 
-        {
-            if (Plitkas.Contains(other.gameObject))
-            {
-                Plitkas.Remove(other.gameObject);
-            }
-
-            if (Walls.Contains(other.gameObject))
-            {
-                Walls.Remove(other.gameObject);
-            }
-        }
-    }
-   
-    private void FindNeighbors()
-    {
-        float rayDistance = 1.5f; // Зависит от размера гекса
-        Vector3[] directions = new Vector3[6]
-        {
-            new Vector3(0, 0, 1),        // Up
-            new Vector3(0.866f, 0, 0.5f), // UpRight (cos(30°), sin(30°))
-            new Vector3(0.866f, 0, -0.5f), // DownRight
-            new Vector3(0, 0, -1),       // Down
-            new Vector3(-0.866f, 0, -0.5f), // DownLeft
-            new Vector3(-0.866f, 0, 0.5f)  // UpLeft
-        };
-
-        for (int i = 0; i < 6; i++)
-        {
-            Ray ray = new Ray(transform.position, directions[i]);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit, rayDistance))
-            {
-                Hexagons.Add(hit.collider.gameObject.transform.parent.gameObject.GetComponent<Triangle>());
-            }
-        }
-    }
-    
-    
     public void CheckNeighborTopColor()
     {
-        if (Hexagons.Count == 0 || Plitkas.Count == 0)
-            return; // Нет соседей или плиток
-        for (int i = 0; i < Hexagons.Count; i++)
+        if (Hexagons.Count == 0 || Plitkas.Count == 0 || isProcessing)
+            return;
+
+        isProcessing = true;
+        try
         {
-            Triangle upperNeighbor = Hexagons[i]; // Up-сосед (индекс зависит от порядка в directions)
-
-            if (upperNeighbor != null && upperNeighbor.Plitkas.Count > 0)
+            foreach (var neighbor in Hexagons)
             {
-                Debug.Log("StartCheck");
-                GameObject myTopTile = Plitkas[0]; // Последняя плитка = верхняя
-                GameObject neighborTopTile = upperNeighbor.Plitkas[0];
-
-                if (myTopTile.name == neighborTopTile.name)
+                if (neighbor == null || neighbor.Plitkas.Count == 0) 
+                    continue;
+            
+                string myColor = GetColorKey(Plitkas[0]);
+                string neighborColor = GetColorKey(neighbor.Plitkas[0]);
+            
+                if (myColor == neighborColor)
                 {
-                    Debug.Log("Цвет верхней плитки совпадает с соседом!");
-                    RemuvePlitkas(Hexagons[i].gameObject,gameObject,myTopTile.name);
+                    Debug.Log($"Color match found: {myColor}");
+                    StartCoroutine(ProcessColorMatch(neighbor));
+                    break;
                 }
             }
-           
+        }
+        finally
+        {
+            isProcessing = false;
         }
     }
-
-    void RemuvePlitkas(GameObject me, GameObject other,string name)
+    private string GetColorKey(GameObject tileObject)
     {
-        Triangle myTriangle = gameObject.GetComponent<Triangle>();
-        Triangle otherTriangle = other.gameObject.GetComponent<Triangle>();
-        if (myTriangle.Walls.Count != otherTriangle.Walls.Count 
-            && myTriangle.Walls.Count < otherTriangle.Walls.Count)
+        if (tileObject == null) return string.Empty;
+        
+        Renderer renderer = tileObject.GetComponent<Renderer>();
+        if (renderer != null && renderer.material != null)
         {
-            for (int i = 0; i < myTriangle.Walls.Count; i++)
-            {
-                if (myTriangle.Walls[i].name == name)
-                {
-                    AddNewWalls(otherTriangle.Walls[i]);
-                    Walls.Remove(Walls[i]);
-                }
-            }
-        }else if (myTriangle.Walls.Count > otherTriangle.Walls.Count)
-        {
-            for (int i = 0; i < otherTriangle.Walls.Count; i++)
-            {
-                if (otherTriangle.Walls[i].name == name)
-                {
-                    AddNewWalls(myTriangle.Walls[i]);
-                    otherTriangle.Walls.Remove(otherTriangle.Walls[i]);
-                }
-            }
-        }else if (myTriangle.Walls.Count == otherTriangle.Walls.Count)
-        {
-            for (int i = 0; i < otherTriangle.Walls.Count; i++)
-            {
-                if (otherTriangle.Walls[i].name == name)
-                {
-                    AddNewWalls(myTriangle.Walls[i]);
-                    otherTriangle.Walls.Remove(otherTriangle.Walls[i]);
-                }
-            }
+            return renderer.material.name.Split(' ')[0];
         }
         
+        return tileObject.name;
     }
+    IEnumerator ProcessColorMatch(Triangle neighbor)
+    {
+        if (isTransferInProgress) yield break;
+        
+        isTransferInProgress = true;
+        yield return new WaitForSeconds(0.2f);
+        
+        // Дополнительные проверки
+        if (this == null || neighbor == null || 
+            Plitkas.Count == 0 || neighbor.Plitkas.Count == 0 || 
+            GetColorKey(Plitkas[0]) != GetColorKey(neighbor.Plitkas[0]))
+        {
+            isTransferInProgress = false;
+            yield break;
+        }
+
+        // Определяем направление переноса
+        if (Walls.Count < neighbor.Walls.Count)
+        {
+            yield return StartCoroutine(TransferWallsSafely(neighbor, this));
+        }
+        else if (Walls.Count > neighbor.Walls.Count)
+        {
+            yield return StartCoroutine(TransferWallsSafely(this, neighbor));
+        }
+        
+        isTransferInProgress = false;
+    }
+
+    IEnumerator TransferWallsSafely(Triangle from, Triangle to)
+    {
+        string targetColor = GetColorKey(from.Plitkas[0]);
+        List<GameObject> wallsToTransfer = new List<GameObject>();
+    
+        // Собираем стены для переноса
+        foreach (var wall in from.Walls.ToArray()) // Используем ToArray для безопасного удаления
+        {
+            if (wall != null && GetColorKey(wall) == targetColor)
+            {
+                wallsToTransfer.Add(wall);
+            }
+        }
+    
+        // Переносим с проверками
+        foreach (var wall in wallsToTransfer)
+        {
+            if (wall == null) continue;
+            
+            from.Walls.Remove(wall);
+            to.Walls.Add(wall);
+            
+            // Плавное перемещение
+            Vector3 targetPos = to.GetTopPosition() + Vector3.up * 0.2f;
+            yield return StartCoroutine(SmoothMove(wall, targetPos));
+            
+            yield return new WaitForSeconds(0.1f);
+        }
+    }
+    Vector3 GetTopPosition()
+    {
+        if (Plitkas.Count > 0) 
+            return Plitkas[Plitkas.Count - 1].transform.position;
+        if (Walls.Count > 0) 
+            return Walls[Walls.Count - 1].transform.position;
+        return transform.position;
+    }
+    
 }
